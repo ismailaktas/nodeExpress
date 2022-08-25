@@ -1,3 +1,5 @@
+
 exports.home = (req, res, next)=>{
-    res.send("Home & Index");
+    console.log(process.env);
+    res.send("Home & Index -- " + process.env.APP_TITLE + " " + process.env.HOSTNAME + " ");
 }

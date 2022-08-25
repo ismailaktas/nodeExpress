@@ -1,21 +1,18 @@
 const express = require("express");
+const dotenv = require('dotenv')
 const app = express();
 
 //Config
-const appConfigs = require("./src/configs/appConfig");
-
-//Controllers
-const homeController = require("./src/controllers/homeController")
-const studentController = require("./src/controllers/studentController")
+dotenv.config({ path: './src/config/appConfig.env' })
 
 //Routes
-app.get("/", homeController.home)
-app.get("/students", studentController.students);
-app.get("/students/:id", studentController.student);
+const indexRoute = require("./src/routes/index")
+app.use("/api/"+process.env.API_VERSION, indexRoute)
 
 
 
 
-app.listen(appConfigs.port, appConfigs.host, ()=>{
-    console.log(` ${appConfigs.host}:${appConfigs.port} -- Sunucu calisiyor`);
+//Server Process
+app.listen(process.env.PORT, process.env.HOSTNAME, ()=>{
+    console.log(` ${process.env.APP_TITLE}  http://${process.env.HOSTNAME}:${process.env.PORT}  Sunucu calisiyor`);
 })
