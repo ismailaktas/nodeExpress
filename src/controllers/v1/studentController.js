@@ -1,24 +1,27 @@
-const models = require("../../models/students");
 
-exports.studentsAll =  async (req, res, next)=>{
+const studentService = require("../../services/studentService")
 
-    models.student.findAll().then(student => {
-        res.json(student)
-    }).catch(next);
-    
+exports.findAll =  async (req, res, next)=>{
+    await studentService.findAll(req, res, next);
 }
 
-/* exports.students =  async (req, res, next)=>{
-    studentSrvc.getDbConn()
-    resultMsg1 = studentSrvc.getDbConn;
-    await res.json({
-        "message": "DbConn: "+resultMsg1
-    })
-} */
-
-exports.student = async (req, res, next)=>{
-    const id = await req.params.id;
-    res.status(200).json({
-        "id": id
-    });
+exports.findById = async (req, res, next)=>{
+    await studentService.findById(req, res, next);
 }
+
+exports.deleteById = async (req, res, next)=>{
+    await studentService.deleteById(req, res, next);
+}
+
+exports.updateById = async (req, res, next)=>{
+    await studentService.updateById(req, res, next);
+}
+
+exports.insertData = async (req, res, next)=>{
+    await studentService.insertData(req, res, next);
+}
+
+exports.findBySqlQuery = async (req, res, next)=>{
+    sqlQuery = "select id, name, surname, email from students"
+    await studentService.executeSqlQuery(req, res, next, sqlQuery);
+} 
