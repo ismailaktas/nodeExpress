@@ -1,8 +1,11 @@
-const studentSrvc = require("../../services/studentService")
+const models = require("../../models/students");
 
-exports.students =  async (req, res, next)=>{
-    const sds = studentSrvc.shorten()
-    await res.send(sds);
+exports.studentsAll =  async (req, res, next)=>{
+
+    models.student.findAll().then(student => {
+        res.json(student)
+    }).catch(next);
+    
 }
 
 /* exports.students =  async (req, res, next)=>{
