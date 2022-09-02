@@ -1,4 +1,3 @@
-
 const studentService = require("../../services/studentService")
 
 exports.findAll =  async (req, res, next)=>{
@@ -22,6 +21,5 @@ exports.insertData = async (req, res, next)=>{
 }
 
 exports.findBySqlQuery = async (req, res, next)=>{
-    sqlQuery = "select id, name, surname, email from students"
-    await studentService.executeSqlQuery(req, res, next, sqlQuery);
+    await studentService.executeQuery(req, res, next);
 } 

@@ -1,4 +1,6 @@
 const db = require("../models");
+const enums = require("../common/enums")
+const utils = require("../common/utils");
 const Students = db.students;
 const Op = db.Sequelize.Op;
 
@@ -133,19 +135,9 @@ exports.insertData = (req, res) => {
 };
 
 //
-exports.executeSqlQuery = async (req, res, next, sqlQuery) => {
-    await db.sequelize.query(sqlQuery).then(data=>{
-        if (data) {
-            res.status(200).send(data);
-        } else {
-            res.status(404).send({
-                message: process.env.MSG_DATA_NOT_FOUND
-            });
-        }
-    }).catch(err => {
-        res.status(500).send({
-            message: process.env.MSG_ERROR + ": " + err.message
-        });
-    });
+exports.executeQuery = async (req, res, next) => {
+    //sqlQuery = "select id, concat(name, ' ', surname) namesurname from students"
+    sqlQuery = "call prcStudents(0)"
+    utils.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
 }
 
