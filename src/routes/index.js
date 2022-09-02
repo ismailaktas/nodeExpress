@@ -2,8 +2,8 @@ const express = require('express')
 const router = express.Router();
 
 //router files
-const home = require('./home')
-const student = require('./student')
+const home = require('./homeRoute')
+const student = require('./studentRoute')
 
 //api/home
 router.use(home)
