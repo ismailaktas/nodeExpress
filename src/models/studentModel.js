@@ -16,9 +16,13 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
-                len: [2, 100],
+                len: {
+                    args: [2, 100],
+                    msg: 'Name 2-100 karakter arasında olmalıdır'
+                },
+                notEmpty: true,
                 notNull: {
-                    msg: 'Please enter your name zorunlu alan'
+                    msg: 'Name zorunlu alan'
                 }                
             }
         },
@@ -26,16 +30,33 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
-                len: [2, 100]
+                notEmpty: {
+                    args: true,
+                    msg: "surname boş olamaz"
+                },
+                notNull: {
+                    msg: 'surname zorunlu alan'
+                },
+                len: {
+                    args: [2, 100],
+                    msg: 'surname 2-100 karakter arasında olmalıdır'
+                }                
             }
         },
         email: {
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
-                isEmail: true,
-                len: [2, 100]
-            }            
+                isEmail: { msg: 'geçersiz email.' },
+                len: {
+                    args: [2, 100],
+                    msg: 'email 2-100 karakter arasında olmalıdır'
+                },
+                notEmpty: true,
+                notNull: {
+                    msg: 'email zorunlu alan'
+                }                
+            }           
         }
     });
     return Student;

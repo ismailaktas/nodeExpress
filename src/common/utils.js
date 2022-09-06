@@ -45,3 +45,11 @@ exports.executeSqlQuery = async (req, res, next, sqlQuery, queryType) => {
         });
     });
 }
+
+exports.escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+exports.replaceAll = (str, find, replace) => {
+    return str.replace(new RegExp( this.escapeRegExp(find), 'g'), replace);
+}
