@@ -1,10 +1,14 @@
 const express = require("express");
 const dotenv = require('dotenv')
+const helmet = require("helmet");
+var cors = require('cors')
 const app = express();
 
 //middlewares
 app.use(express.urlencoded({extended:true})); // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.json()); // parse requests of content-type - application/json
+app.use(helmet()); // XSS vs. ataklar icin
+app.use(cors()); //Cors 
 
 //Config
 dotenv.config({ path: './src/config/appConfig.env' })
