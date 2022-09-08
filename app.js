@@ -1,36 +1,24 @@
 const express = require("express");
 const dotenv = require('dotenv')
 const helmet = require("helmet");
-const cors = require('cors')
+const cors = require('cors');
+const bodyParser = require("body-parser");
+
 const app = express();
 
-//middlewares
+//Middlewares
 app.use(express.urlencoded({extended:true})); // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.json()); // parse requests of content-type - application/json
 app.use(helmet()); // XSS vs. ataklar icin
 app.use(cors()); //Cors 
+app.use(bodyParser.urlencoded({extended:true})); //Encode edilmis url ler icin
 
 //Config
 dotenv.config({ path: './src/config/appConfig.env' })
 
-
 //Routes
 const indexRoute = require("./src/routes/index")
 app.use("/api/"+process.env.API_VERSION, indexRoute)
-
-
-//DB Sync Check
-/*
-const db = require("./src/models");
-db.sequelize.sync()
-.then(() => {
-    console.log("Synced db.");
-})
-.catch((err) => {
-    console.log("Failed to sync db: " + err.message);
-});
-*/
-
 
 //Server Process
 app.listen(process.env.PORT, process.env.HOSTNAME, ()=>{

@@ -57,7 +57,24 @@ module.exports = (sequelize, Sequelize) => {
                     msg: 'email zorunlu alan'
                 }                
             }           
-        }
+        },
+        password: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: {
+                    args: true,
+                    msg: "password boş olamaz"
+                },
+                notNull: {
+                    msg: 'password zorunlu alan'
+                },
+                len: {
+                    args: [2, 255],
+                    msg: 'password 2-100 karakter arasında olmalıdır'
+                }                
+            }
+        }        
     });
     return Student;
 };

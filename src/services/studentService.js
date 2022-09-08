@@ -1,7 +1,10 @@
 const db = require("../models");
 const enums = require("../common/enums")
+const dbService = require("./dbService");
 const utils = require("../common/utils");
-const { sequelize } = require("../models");
+const bcrypt = require("../common/bcrypt");
+
+//
 const Students = db.students;
 const Op = db.Sequelize.Op;
 
@@ -117,7 +120,8 @@ exports.insertData = (req, res) => {
     const studentData = {
         name: req.body.name,
         surname: req.body.surname,
-        email: req.body.email
+        email: req.body.email,
+        password: bcrypt.hashStringSync(req.body.password) //Password hashled
     };
 
     // Create Record on Database
@@ -139,8 +143,8 @@ exports.insertData = (req, res) => {
 
 //
 exports.executeQuery = async (req, res, next) => {
-    //sqlQuery = "select id, concat(name, ' ', surname) namesurname from students"
+    sqlQuery = "select id, concat(name, ' ', surname) namesurname from students"
     sqlQuery = "call prcStudents(0)"
-    utils.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
+    dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
 }
 
