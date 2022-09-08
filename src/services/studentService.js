@@ -58,7 +58,7 @@ exports.deleteById = async (req, res, next) => {
 
     const id = req.params.id;
 
-    Students.destroy({
+    await Students.destroy({
             where: {
                 id: id
             }
@@ -85,11 +85,18 @@ exports.deleteById = async (req, res, next) => {
 }
 
 //
-exports.updateById = (req, res) => {
-    const id = req.params.id;
-    Student.update(req.body, {
+exports.updateById = async (req, res, next) => {
+    const dataId = req.body.id;
+
+    const studentData = {
+        name: req.body.name,
+        surname: req.body.surname,
+        email: req.body.email
+    };   
+
+    await Students.update(studentData, {
             where: {
-                id: id
+                id: dataId
             }
         })
         .then(num => {
@@ -110,22 +117,26 @@ exports.updateById = (req, res) => {
                 success:false,
                 message:err.message
             });
+            
         });
+
+        
 };
 
 //
-exports.insertData = (req, res) => {
+exports.insertData = async (req, res) => {
 
     // Define a Record
+    let hashedPassword = await bcrypt.hashStringAsync(req.body.password);
     const studentData = {
         name: req.body.name,
         surname: req.body.surname,
         email: req.body.email,
-        password: bcrypt.hashStringSync(req.body.password) //Password hashled
+        password: hashedPassword
     };
 
     // Create Record on Database
-    Students.create(studentData)
+    await Students.create(studentData)
         .then(data => {
             res.status(200).send({
                 success:true,
@@ -145,6 +156,6 @@ exports.insertData = (req, res) => {
 exports.executeQuery = async (req, res, next) => {
     sqlQuery = "select id, concat(name, ' ', surname) namesurname from students"
     sqlQuery = "call prcStudents(0)"
-    dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
+    await dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
 }
 
