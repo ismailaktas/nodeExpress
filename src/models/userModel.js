@@ -3,7 +3,7 @@ const {
     DataTypes
 } = require('sequelize');
 
-const tableName = "students";
+const tableName = "users";
 module.exports = (sequelize, Sequelize) => {
     const Student = sequelize.define(tableName, {
         id: {
@@ -13,52 +13,64 @@ module.exports = (sequelize, Sequelize) => {
             unique: true,
             allowNull: false
         },
-        name: {
+        username: {
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
                 len: {
                     args: [2, 100],
-                    msg: 'Name 2-100 karakter arasında olmalıdır'
+                    msg: 'username 2-100 karakter arasında olmalıdır'
                 },
                 notEmpty: true,
                 notNull: {
-                    msg: 'Name zorunlu alan'
+                    msg: 'username zorunlu alan'
                 }                
             }
         },
-        surname: {
+        fullname: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            validate: {
+                len: {
+                    args: [2, 100],
+                    msg: 'fullname 2-100 karakter arasında olmalıdır'
+                },
+                notEmpty: true,
+                notNull: {
+                    msg: 'fullname zorunlu alan'
+                }                
+            }
+        },        
+        password: {
             type: Sequelize.STRING,
             allowNull: false,
             validate: {
                 notEmpty: {
                     args: true,
-                    msg: "surname boş olamaz"
+                    msg: "password boş olamaz"
                 },
                 notNull: {
-                    msg: 'surname zorunlu alan'
+                    msg: 'password zorunlu alan'
                 },
                 len: {
                     args: [2, 100],
-                    msg: 'surname 2-100 karakter arasında olmalıdır'
+                    msg: 'password 2-100 karakter arasında olmalıdır'
                 }                
             }
         },
-        email: {
-            type: Sequelize.STRING,
+        isActive: {
+            type: Sequelize.BOOLEAN,
             allowNull: false,
             validate: {
-                isEmail: { msg: 'geçersiz email.' },
-                len: {
-                    args: [2, 100],
-                    msg: 'email 2-100 karakter arasında olmalıdır'
+                notEmpty: {
+                    args: true,
+                    msg: "isActive boş olamaz"
                 },
-                notEmpty: true,
                 notNull: {
-                    msg: 'email zorunlu alan'
-                }                
-            }           
-        }     
+                    msg: 'isActive zorunlu alan'
+                }              
+            }
+        }        
     });
     return Student;
 };
