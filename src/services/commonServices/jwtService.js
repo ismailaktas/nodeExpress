@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
-exports.jwtSign = (strId, strUserName, strPassword, strSecretKey) => {
-    const token = jwt.sign({id: strId, username: strUserName, password: strPassword}, strSecretKey, {expiresIn: "2h"}); // 2 saat expire
+exports.jwtSign = (strId, strUserName, strFullname, strSecretKey) => {
+    const token = jwt.sign({id: strId, username: strUserName, fullname: strFullname}, strSecretKey, {expiresIn: process.env.ACCESS_TOKEN_EXPIRE}); 
     return token;
 }
 

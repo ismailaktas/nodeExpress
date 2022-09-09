@@ -11,10 +11,10 @@ exports.compareStringSync = (strOriginal, strHashed) => {
 }
 
 //Async
-exports.hashStringAsync = (strOriginal) => {
-    return bcrypt.hash(strOriginal, saltRounds);
+exports.hashStringAsync = async (strOriginal) => {
+    return await bcrypt.hash(strOriginal, saltRounds);
 }
 
-exports.compareStringAsync = (strOriginal, strHashed) => {
-    return bcrypt.compare(strOriginal, strHashed);
+exports.compareStringAsync = async (strOriginal, strHashed) => {
+    return await bcrypt.compare(strOriginal, strHashed);
 }

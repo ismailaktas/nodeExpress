@@ -8,8 +8,14 @@ const jwt = require("../commonServices/jwtService");
 const Model = db.users;
 const Op = db.Sequelize.Op;
 
+//Token alan kullanıcı bilgileri
+//req.userData (id, username, password, iat, exp)
+
+
 //
 exports.findAll = async (req, res, next) => {
+
+    //console.log("Req:", req.userData.id); Token almış kullanıcı
     await Model.findAll().then(data => {
             res.status(200).send({
                 success:true,
@@ -86,7 +92,7 @@ exports.deleteById = async (req, res, next) => {
 
 //
 exports.updateById = async (req, res, next) => {
-    const dataId = req.body.id;
+    const dataId = req.params.id;
     const reqData = {
         username: req.body.username,
         fullname: req.body.fullname,
@@ -99,6 +105,7 @@ exports.updateById = async (req, res, next) => {
             }
         })
         .then(num => {
+
             if (num == 1) {
                 res.status(200).send({
                     success:true,
@@ -110,6 +117,7 @@ exports.updateById = async (req, res, next) => {
                     message:process.env.MSG_FAIL
                 });
             }
+            
         })
         .catch(err => {
             res.status(500).send({
@@ -159,32 +167,42 @@ exports.executeQuery = async (req, res, next) => {
 }
 
 //Login
-
 exports.login = async (req, res) => {
 
     const reqData = {
         where: {
-            username: req.body.username
+            username: req.body.username,
+            isActive: 1
         }
     };
 
     await Model.findOne(reqData)
         .then(data => {
             if (data) {
+                
+                //Verify password
+                const verifyPassword = bcrypt.compareStringSync(req.body.password, data.password);
 
-                const userToken = jwt.jwtSign(data.id, data.username, data.password, process.env.SECRET_KEY);
-                //data.push(userToken);
+                if (verifyPassword) {
+                    const userToken = jwt.jwtSign(data.id, data.username, data.fullname, process.env.SECRET_KEY);
+                    res.send({
+                        success:true,
+                        message:process.env.MSG_SUCCESS,
+                        data,
+                        userToken
+                    });
+                }
+                else {
+                    res.status(401).send({
+                        success:false,
+                        message: process.env.MSG_NO_AUTH            
+                    });                    
+                }
 
-                res.send({
-                    success:true,
-                    message:process.env.MSG_SUCCESS,
-                    data,
-                    userToken
-                });
             } else {
-                res.status(404).send({
+                res.status(401).send({
                     success:false,
-                    message: process.env.MSG_DATA_NOT_FOUND
+                    message: process.env.MSG_NO_AUTH
                 });
             }
         })

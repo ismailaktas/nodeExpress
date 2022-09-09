@@ -7,9 +7,10 @@ module.exports = (req, res, next) => {
             JWT header ile gonderilecek. 
             Format : Bearer 
         */
-        const token = req.headers.authorization.split(" ")[1];
+        const token = req.headers.authorization.split(" ")[1]; // 0=Bearer, 1=Token Degeri
         const decodedToken = jwtService.jwtVerify(token, process.env.SECRET_KEY);
         req.userData = decodedToken;
+
         next();
     }catch(error) {
         return res.status(401).send({
