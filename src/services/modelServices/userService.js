@@ -39,6 +39,7 @@ exports.findById = async (req, res, next) => {
     await Model.findByPk(id)
         .then(data => {
             if (data) {
+                // req.session.fullName = data.fulname <- Ornek session kullanimi
                 res.send({
                     success:true,
                     message:process.env.MSG_SUCCESS,
@@ -89,7 +90,7 @@ exports.deleteById = async (req, res, next) => {
             });
         });
 }
-
+ 
 //
 exports.updateById = async (req, res, next) => {
     const dataId = req.params.id;

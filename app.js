@@ -3,6 +3,7 @@ const dotenv = require('dotenv')
 const helmet = require("helmet");
 const cors = require('cors');
 const bodyParser = require("body-parser");
+const session = require('express-session');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json()); // parse requests of content-type - application/json
 app.use(helmet()); // XSS vs. ataklar icin
 app.use(cors()); //Cors 
 app.use(bodyParser.urlencoded({extended:true})); //Encode edilmis url ler icin
+app.use( session( {secret: "NodeExpress", resave: false, saveUninitialized: true} ) ); //Session yonetimi icin Ornek: req.session.fullName = data.fulname
 
 //Config
 dotenv.config({ path: './src/config/appConfig.env' })
