@@ -1,4 +1,5 @@
 const db = require("../../models");
+const redisClient = require("./redisService");
 
 //Db Query Types
 exports.getQueryType = (queryType) => {
@@ -30,19 +31,72 @@ exports.getQueryType = (queryType) => {
 }
 
 //Custom Exec Query
-exports.executeSqlQuery = async (req, res, next, sqlQuery, queryType) => {
+exports.executeSqlQuery = async (req, res, next, sqlQuery, queryType, redisKey="") => {
     let qType = this.getQueryType(queryType);
-    await db.sequelize.query(sqlQuery, {type: qType}).then(data=>{
-        if (data) {
-            res.status(200).send(data);
-        } else {
-            res.status(404).send({
-                message: process.env.MSG_DATA_NOT_FOUND
+    let isCached = false;
+    
+    if (redisKey !== ""){ //redisKey bos degilse
+        
+        const cacheResults = await redisClient.get(redisKey);
+        
+        if (cacheResults) { //cache var ise
+            isCached = true;
+            data = JSON.parse(cacheResults);
+    
+            res.status(200).send({
+                success: true,
+                message: process.env.MSG_SUCCESS,
+                isCached,
+                data
             });
         }
-    }).catch(err => {
-        res.status(500).send({
-            message: process.env.MSG_ERROR + ": " + err.message
+        else { //Cache yok ise
+            await db.sequelize.query(sqlQuery, {type: qType}).then(data=>{
+                if (data) {
+
+                    redisClient.set(redisKey, JSON.stringify(data));
+
+                    res.status(200).send({
+                        success: true,
+                        message: process.env.MSG_SUCCESS,
+                        isCached,
+                        data
+                    });
+                } else {
+                    res.status(404).send({
+                        success: false,
+                        message: process.env.MSG_DATA_NOT_FOUND
+                    });
+                }
+            }).catch(err => {
+                res.status(500).send({
+                    success: false,
+                    message: process.env.MSG_ERROR + ": " + err.message
+                });
+            });            
+        }
+    }
+    else { 
+        await db.sequelize.query(sqlQuery, {type: qType}).then(data=>{
+            if (data) {
+                res.status(200).send({
+                    success: true,
+                    message: process.env.MSG_SUCCESS,
+                    isCached,
+                    data
+                });
+            } else {
+                res.status(404).send({
+                    success: false,
+                    message: process.env.MSG_DATA_NOT_FOUND
+                });
+            }
+        }).catch(err => {
+            res.status(500).send({
+                success: false,
+                message: process.env.MSG_ERROR + ": " + err.message
+            });
         });
-    });
+    }
+
 }

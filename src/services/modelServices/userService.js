@@ -4,6 +4,8 @@ const dbService = require("../commonServices/dbService");
 const utils = require("../../common/utils");
 const bcrypt = require("../commonServices/bcryptService");
 const jwt = require("../commonServices/jwtService");
+const redisClient = require("../commonServices/redisService");
+
 //
 const Model = db.users;
 const Op = db.Sequelize.Op;
@@ -11,53 +13,102 @@ const Op = db.Sequelize.Op;
 //Token alan kullanıcı bilgileri
 //req.userData (id, username, password, iat, exp)
 
-
 //
 exports.findAll = async (req, res, next) => {
 
     //console.log("Req:", req.userData.id); Token almış kullanıcı
-    await Model.findAll().then(data => {
-            res.status(200).send({
-                success:true,
-                message:process.env.MSG_SUCCESS,
-                data
+
+    const redisKey = "users_0";
+    let isCached = false;
+    const cacheResults = await redisClient.get(redisKey);
+
+    if (cacheResults) {
+        isCached = true;
+        data = JSON.parse(cacheResults);
+
+        res.status(200).send({
+            success: true,
+            message: process.env.MSG_SUCCESS,
+            isCached,
+            data
+        });
+
+    } else {
+        await Model.findAll().then(data => {
+
+                redisClient.set(redisKey, JSON.stringify(data));
+
+                res.status(200).send({
+                    success: true,
+                    message: process.env.MSG_SUCCESS,
+                    isCached,
+                    data
+                });
+            })
+            .catch(err => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message
+                });
             });
-        })
-        .catch(err => {
-            res.status(500).send({
-                success:false,
-                message: err.message
-            });
-        })
+    }
+
 }
 
 //
 exports.findById = async (req, res, next) => {
 
     const id = req.params.id;
+    const redisKey = "users_" + id;
+    let isCached = false;
 
-    await Model.findByPk(id)
-        .then(data => {
-            if (data) {
-                // req.session.fullName = data.fulname <- Ornek session kullanimi
-                res.send({
-                    success:true,
-                    message:process.env.MSG_SUCCESS,
-                    data
-                });
-            } else {
-                res.status(404).send({
-                    success:false,
-                    message: process.env.MSG_DATA_NOT_FOUND
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                success:false,
-                message:err.message
-            });
+    const cacheResults = await redisClient.get(redisKey);
+
+    if (cacheResults) {
+        isCached = true;
+        data = JSON.parse(cacheResults);
+
+        res.status(200).send({
+            success: true,
+            message: process.env.MSG_SUCCESS,
+            isCached,
+            data
         });
+
+    } else {
+
+        await Model.findByPk(id)
+            .then(data => {
+                if (data) {
+                    // req.session.fullName = data.fulname <- Ornek session kullanimi
+
+                    redisClient.set(redisKey, JSON.stringify(data));
+
+                    res.status(200).send({
+                        success: true,
+                        message: process.env.MSG_SUCCESS,
+                        isCached,
+                        data
+                    });
+
+                } else {
+                    res.status(404).send({
+                        success: false,
+                        message: process.env.MSG_DATA_NOT_FOUND
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message
+                });
+            });
+
+
+    }
+
+
 }
 
 //
@@ -73,24 +124,24 @@ exports.deleteById = async (req, res, next) => {
         .then(num => {
             if (num == 1) {
                 res.status(200).send({
-                    success:true,
-                    message:process.env.MSG_SUCCESS
+                    success: true,
+                    message: process.env.MSG_SUCCESS
                 });
             } else {
                 res.status(400).send({
-                    success:false,
-                    message:process.env.MSG_FAIL
+                    success: false,
+                    message: process.env.MSG_FAIL
                 });
             }
         })
         .catch(err => {
             res.status(500).send({
-                success:false,
-                message:err.message
+                success: false,
+                message: err.message
             });
         });
 }
- 
+
 //
 exports.updateById = async (req, res, next) => {
     const dataId = req.params.id;
@@ -98,7 +149,7 @@ exports.updateById = async (req, res, next) => {
         username: req.body.username,
         fullname: req.body.fullname,
         isActive: req.body.isActive
-    };  
+    };
 
     await Model.update(reqData, {
             where: {
@@ -109,26 +160,26 @@ exports.updateById = async (req, res, next) => {
 
             if (num == 1) {
                 res.status(200).send({
-                    success:true,
-                    message:process.env.MSG_SUCCESS
+                    success: true,
+                    message: process.env.MSG_SUCCESS
                 });
             } else {
                 res.status(400).send({
-                    success:false,
-                    message:process.env.MSG_FAIL
+                    success: false,
+                    message: process.env.MSG_FAIL
                 });
             }
-            
+
         })
         .catch(err => {
             res.status(500).send({
-                success:false,
-                message:err.message
+                success: false,
+                message: err.message
             });
-            
+
         });
 
-        
+
 };
 
 //
@@ -147,14 +198,14 @@ exports.insertData = async (req, res) => {
     await Model.create(reqData)
         .then(data => {
             res.status(200).send({
-                success:true,
-                message:process.env.MSG_SUCCESS,
+                success: true,
+                message: process.env.MSG_SUCCESS,
                 data
             });
         })
         .catch(err => {
             res.status(500).send({
-                success:false,
+                success: false,
                 message: utils.replaceAll(err.message, "Validation error:", "")
             });
         });
@@ -162,9 +213,8 @@ exports.insertData = async (req, res) => {
 
 //
 exports.executeQuery = async (req, res, next) => {
-    sqlQuery = "select id, concat(name, ' ', surname) namesurname from Model"
-    sqlQuery = "call prcModel(0)"
-    await dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
+    sqlQuery = "call prcStudents(0)";
+    await dbService.executeSqlQuery(req, res, next, sqlQuery, enums.queryType.storedProcedureOrFunction, "userCustom")
 }
 
 //Login
@@ -180,39 +230,38 @@ exports.login = async (req, res) => {
     await Model.findOne(reqData)
         .then(data => {
             if (data) {
-                
+
                 //Verify password
                 const verifyPassword = bcrypt.compareStringSync(req.body.password, data.password);
 
                 if (verifyPassword) {
                     const userToken = jwt.jwtSign(data.id, data.username, data.fullname, process.env.SECRET_KEY);
                     res.send({
-                        success:true,
-                        message:process.env.MSG_SUCCESS,
+                        success: true,
+                        message: process.env.MSG_SUCCESS,
                         data,
                         userToken
                     });
-                }
-                else {
+                } else {
                     res.status(401).send({
-                        success:false,
-                        message: process.env.MSG_NO_AUTH            
-                    });                    
+                        success: false,
+                        message: process.env.MSG_NO_AUTH
+                    });
                 }
 
             } else {
                 res.status(401).send({
-                    success:false,
+                    success: false,
                     message: process.env.MSG_NO_AUTH
                 });
             }
         })
         .catch(err => {
             res.status(500).send({
-                success:false,
-                message:err.message
+                success: false,
+                message: err.message
             });
         });
 
-    
+
 };

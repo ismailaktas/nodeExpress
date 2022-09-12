@@ -3,6 +3,7 @@ const enums = require("../../common/enums")
 const dbService = require("../commonServices/dbService");
 const utils = require("../../common/utils");
 const bcrypt = require("../commonServices/bcryptService");
+const redisClient = require("../commonServices/redisService");
 
 //
 const Model = db.students;
@@ -10,47 +11,100 @@ const Op = db.Sequelize.Op;
 
 //
 exports.findAll = async (req, res, next) => {
-    await Model.findAll().then(data => {
-            res.status(200).send({
-                success:true,
-                message:process.env.MSG_SUCCESS,
-                data
+
+    //console.log("Req:", req.userData.id); Token almış kullanıcı
+
+    const redisKey = "students_0";
+    let isCached = false;
+    const cacheResults = await redisClient.get(redisKey);
+
+    if (cacheResults) {
+        isCached = true;
+        data = JSON.parse(cacheResults);
+
+        res.status(200).send({
+            success: true,
+            message: process.env.MSG_SUCCESS,
+            isCached,
+            data
+        });
+
+    } else {
+        await Model.findAll().then(data => {
+
+                redisClient.set(redisKey, JSON.stringify(data));
+
+                res.status(200).send({
+                    success: true,
+                    message: process.env.MSG_SUCCESS,
+                    isCached,
+                    data
+                });
+            })
+            .catch(err => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message
+                });
             });
-        })
-        .catch(err => {
-            res.status(500).send({
-                success:false,
-                message: err.message
-            });
-        })
+    }
+
 }
 
 //
 exports.findById = async (req, res, next) => {
 
     const id = req.params.id;
+    const redisKey = "students_" + id;
+    let isCached = false;
 
-    await Model.findByPk(id)
-        .then(data => {
-            if (data) {
-                res.send({
-                    success:true,
-                    message:process.env.MSG_SUCCESS,
-                    data
-                });
-            } else {
-                res.status(404).send({
-                    success:false,
-                    message: process.env.MSG_DATA_NOT_FOUND
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                success:false,
-                message:err.message
-            });
+    const cacheResults = await redisClient.get(redisKey);
+
+    if (cacheResults) {
+        isCached = true;
+        data = JSON.parse(cacheResults);
+
+        res.status(200).send({
+            success: true,
+            message: process.env.MSG_SUCCESS,
+            isCached,
+            data
         });
+
+    } else {
+
+        await Model.findByPk(id)
+            .then(data => {
+                if (data) {
+                    // req.session.fullName = data.fulname <- Ornek session kullanimi
+
+                    redisClient.set(redisKey, JSON.stringify(data));
+
+                    res.status(200).send({
+                        success: true,
+                        message: process.env.MSG_SUCCESS,
+                        isCached,
+                        data
+                    });
+
+                } else {
+                    res.status(404).send({
+                        success: false,
+                        message: process.env.MSG_DATA_NOT_FOUND
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).send({
+                    success: false,
+                    message: err.message
+                });
+            });
+
+
+    }
+
+
 }
 
 //
@@ -155,7 +209,7 @@ exports.insertData = async (req, res) => {
 //
 exports.executeQuery = async (req, res, next) => {
     sqlQuery = "select id, concat(name, ' ', surname) namesurname from Model"
-    sqlQuery = "call prcModel(0)"
-    await dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction)
+    sqlQuery = "call prcStudents(0)"
+    await dbService.executeSqlQuery(req, res, next, sqlQuery,  enums.queryType.storedProcedureOrFunction, "studentCustom")
 }
 
