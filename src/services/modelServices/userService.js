@@ -19,7 +19,7 @@ exports.findAll = async (req, res, next) => {
 
     //console.log("Req:", req.userData.id); Token almış kullanıcı
 
-    const redisKey = "users_0";
+    const redisKey = redisKeyGroup+"users_0";
     let isCached = false;
     const cacheResults = await redisService.getKey(redisKey);
 
@@ -37,7 +37,7 @@ exports.findAll = async (req, res, next) => {
     } else {
         await Model.findAll().then(data => {
 
-            redisService.setKey(redisKey, JSON.stringify(data), 5);
+            redisService.setKey(redisKey, JSON.stringify(data), 60);
 
             res.status(200).send({
                     success: true,
@@ -83,7 +83,7 @@ exports.findById = async (req, res, next) => {
                 if (data) {
                     // req.session.fullName = data.fulname <- Ornek session kullanimi
 
-                    redisService.setKey(redisKey, JSON.stringify(data), 55);
+                    redisService.setKey(redisKey, JSON.stringify(data), 60);
 
                     res.status(200).send({
                         success: true,
