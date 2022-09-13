@@ -2,12 +2,13 @@ const db = require("../../models");
 const enums = require("../../common/enums")
 const dbService = require("../commonServices/dbService");
 const utils = require("../../common/utils");
-const bcrypt = require("../commonServices/bcryptService");
-const jwt = require("../commonServices/jwtService");
-const redisClient = require("../commonServices/redisService");
+const bcryptService = require("../commonServices/bcryptService");
+const jwtService = require("../commonServices/jwtService");
+const redisService = require("../commonServices/redisService");
 
 //
 const Model = db.users;
+const redisKeyGroup = "users:";
 const Op = db.Sequelize.Op;
 
 //Token alan kullanıcı bilgileri
@@ -20,7 +21,7 @@ exports.findAll = async (req, res, next) => {
 
     const redisKey = "users_0";
     let isCached = false;
-    const cacheResults = await redisClient.get(redisKey);
+    const cacheResults = await redisService.getKey(redisKey);
 
     if (cacheResults) {
         isCached = true;
@@ -36,9 +37,9 @@ exports.findAll = async (req, res, next) => {
     } else {
         await Model.findAll().then(data => {
 
-                redisClient.set(redisKey, JSON.stringify(data));
+            redisService.setKey(redisKey, JSON.stringify(data), 5);
 
-                res.status(200).send({
+            res.status(200).send({
                     success: true,
                     message: process.env.MSG_SUCCESS,
                     isCached,
@@ -59,10 +60,10 @@ exports.findAll = async (req, res, next) => {
 exports.findById = async (req, res, next) => {
 
     const id = req.params.id;
-    const redisKey = "users_" + id;
+    const redisKey =  redisKeyGroup+"users_" + id;
     let isCached = false;
 
-    const cacheResults = await redisClient.get(redisKey);
+    const cacheResults = await redisService.getKey(redisKey);
 
     if (cacheResults) {
         isCached = true;
@@ -82,7 +83,7 @@ exports.findById = async (req, res, next) => {
                 if (data) {
                     // req.session.fullName = data.fulname <- Ornek session kullanimi
 
-                    redisClient.set(redisKey, JSON.stringify(data));
+                    redisService.setKey(redisKey, JSON.stringify(data), 55);
 
                     res.status(200).send({
                         success: true,
@@ -105,9 +106,7 @@ exports.findById = async (req, res, next) => {
                 });
             });
 
-
     }
-
 
 }
 
@@ -186,7 +185,7 @@ exports.updateById = async (req, res, next) => {
 exports.insertData = async (req, res) => {
 
     // Define a Record
-    let hashedPassword = await bcrypt.hashStringAsync(req.body.password);
+    let hashedPassword = await bcryptService.hashStringAsync(req.body.password);
     const reqData = {
         username: req.body.username,
         password: hashedPassword,
@@ -232,10 +231,10 @@ exports.login = async (req, res) => {
             if (data) {
 
                 //Verify password
-                const verifyPassword = bcrypt.compareStringSync(req.body.password, data.password);
+                const verifyPassword = bcryptService.compareStringSync(req.body.password, data.password);
 
                 if (verifyPassword) {
-                    const userToken = jwt.jwtSign(data.id, data.username, data.fullname, process.env.SECRET_KEY);
+                    const userToken = jwtService.jwtSign(data.id, data.username, data.fullname, process.env.SECRET_KEY);
                     res.send({
                         success: true,
                         message: process.env.MSG_SUCCESS,

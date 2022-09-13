@@ -1,11 +1,8 @@
-const {
-    sequelize,
-    DataTypes
-} = require('sequelize');
+const { sequelize, DataTypes } = require('sequelize');
 
 const tableName = "users";
 module.exports = (sequelize, Sequelize) => {
-    const Student = sequelize.define(tableName, {
+    const dataModel = sequelize.define(tableName, {
         id: {
             type: DataTypes.BIGINT(20),
             primaryKey: true,
@@ -72,5 +69,6 @@ module.exports = (sequelize, Sequelize) => {
             }
         }        
     });
-    return Student;
+    return dataModel;
 };
+
