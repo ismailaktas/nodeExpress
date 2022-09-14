@@ -4,16 +4,21 @@ const helmet = require("helmet");
 const cors = require('cors');
 const bodyParser = require("body-parser");
 const session = require('express-session');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
+
+//Swagger
+swaggerDocument = require('./swagger.json');
 
 //Middlewares
 app.use(express.urlencoded({extended:true})); // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.json()); // parse requests of content-type - application/json
-app.use(helmet()); // XSS vs. ataklar icin
-app.use(cors()); //Cors 
+app.use(helmet({ contentSecurityPolicy: false })); // XSS vs. ataklar icin
+app.use(cors({"allowedHeaders":"*", "Access-Control-Allow-Origin":"*"})); //Cors 
 app.use(bodyParser.urlencoded({extended:true})); //Encode edilmis url ler icin
 app.use( session( {secret: "NodeExpress", resave: false, saveUninitialized: true} ) ); //Session yonetimi icin Ornek: req.session.fullName = data.fulname
+app.use("/api/swagger", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //Config
 dotenv.config({ path: './src/config/appConfig.env' })

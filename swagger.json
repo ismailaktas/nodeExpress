@@ -1,0 +1,162 @@
+{
+    "swagger": "2.0", 
+    "info": {
+      "version": "1.0.0",
+      "title": "NodeExpress",
+      "description": "Restfull Web Api project hosting Node.js, Express.js, Sequelize, JWT, MySql, Bcrypt, Redis, Jwt, Swagger",
+      "license": {
+        "name": "Ismail AKTAS",
+        "url": "https://www.ismailaktas.com"
+      }
+    },
+    "host": "127.0.0.1:3000/api/v1/",
+    "schemes": [
+        "http",
+        "https",
+        "ws"
+    ],
+    "consumes": [
+      "application/json",
+      "application/xml"
+    ],
+    "produces": [
+      "application/json",
+      "application/xml"
+    ],
+    "paths": {
+        "/students": {
+          "get": {
+            "tags": ["students"],        
+            "produces": ["application/json"],          
+            "summary": "Get all students",
+            "parameters": [
+              {
+                "name" : "Authorization",
+                "description": "token",
+                "in" : "header",
+                "type": "string",
+                "required": true 
+              }
+            ],            
+            "responses": {}
+          }
+        },
+        "/students/{id}": {
+          "get": {
+            "tags": ["students"],        
+            "produces": ["application/json"],            
+            "consumes": ["application/json"],            
+            "summary": "Get student by id",
+            "description": "Get student by id",
+            "parameters": [
+               {
+                  "name": "id",
+                  "description": "student id",
+                  "in":"path",
+                  "required": true,
+                  "type": "integer"
+               },
+               {
+                  "name" : "Authorization",
+                  "description": "token",
+                  "in" : "header",
+                  "type": "string",
+                  "required": true 
+                }                       
+            ],            
+            "responses": {}
+          }
+        },         
+        "/login": {
+          "post": {
+            "tags": ["users"],        
+            "produces": ["application/json"],            
+            "consumes": ["application/json"],            
+            "summary": "Login",
+            "description": "Login & Token",
+            "parameters": [
+                {
+                  "in": "body",
+                  "description": "username and password parameters",
+                  "name": "user",
+                  "schema": {
+                    "type": "object",
+                    "required": ["username", "password"],
+                    "properties": {
+                      "username": {"type": "string"},
+                      "password": {"type": "string"}
+                    }
+                  } 
+                }           
+            ],            
+            "responses": {}
+          }
+        },
+        "/users/{id}": {
+          "get": {
+            "tags": ["users"],        
+            "produces": ["application/json"],            
+            "consumes": ["application/json"],            
+            "summary": "Get user by id",
+            "description": "Get user by id",
+            "parameters": [
+               {
+                  "name": "id",
+                  "description": "user id",
+                  "in":"path",
+                  "required": true,
+                  "type": "integer"
+               },
+               {
+                  "name" : "Authorization",
+                  "description": "token",
+                  "in" : "header",
+                  "type": "string",
+                  "required": true 
+                }                       
+            ],            
+            "responses": {}
+          },
+          "put": {
+            "tags": ["users"],        
+            "produces": ["application/json"],            
+            "consumes": ["application/json"],            
+            "summary": "Update user by id",
+            "description": "Update user by id",
+            "parameters": [
+               {
+                  "name": "id",
+                  "description": "user id",
+                  "in":"path",
+                  "required": true,
+                  "type": "integer"
+               },
+               {
+                  "name" : "Authorization",
+                  "description": "token",
+                  "in" : "header",
+                  "type": "string",
+                  "required": true 
+                },
+                {
+                  "in": "body",
+                  "description": "username, fullname, isActive parameters",
+                  "name": "user",
+                  "schema": {
+                    "type": "object",
+                    "required": ["username", "fullname", "isActive"],
+                    "properties": {
+                      "username": {"type": "string"},
+                      "fullname": {"type": "string"},
+                      "isActive": {"type": "boolean"}
+                    }
+                  } 
+                }                                          
+            ],            
+            "responses": {}
+          }
+        }    
+        
+
+    }
+}
