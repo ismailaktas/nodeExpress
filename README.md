@@ -1,3 +1,18 @@
 # nodeExpress
-Node.js, Express.js, Sequlize, JWT, MySql, Bcrypt, Redis, Jwt, 
-MVC Pattern within Backend Restfull API Project
+Restfull Web Api Project
+
+------
+
+* Node.js
+* Express.js
+* Sequelize
+* Jwt
+* Redis
+* Mysql
+* Bcrypt
+* Model Validation
+* Swagger
+* Routing
+* DotEnv
+* Cors
+* Helmet
