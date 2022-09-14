@@ -37,7 +37,7 @@ exports.findAll = async (req, res, next) => {
     } else {
         await Model.findAll().then(data => {
 
-            redisService.setKey(redisKey, JSON.stringify(data), 60);
+            redisService.setKey(redisKey, JSON.stringify(data), 300);
 
             res.status(200).send({
                     success: true,
@@ -163,9 +163,9 @@ exports.updateById = async (req, res, next) => {
                     message: process.env.MSG_SUCCESS
                 });
             } else {
-                res.status(400).send({
+                res.status(404).send({
                     success: false,
-                    message: process.env.MSG_FAIL
+                    message: process.env.MSG_DATA_NO_CHANGED_DATA
                 });
             }
 
